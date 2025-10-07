@@ -7,5 +7,6 @@ urlpatterns = [
     path("clientes/", include("Clientes.urls")),
     path("pedidos/", include("Pedidos.urls")),
     path("facturas/", include("Facturas.urls")),
+    path('despachos/', include('Despachos.urls')),
     path("inicio/", views.inicio)
 ]
