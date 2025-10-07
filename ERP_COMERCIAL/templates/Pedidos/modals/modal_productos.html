@@ -1,0 +1,47 @@
+{# Este template asume que el objeto 'pedido' está disponible en el contexto #}
+
+<div class="modal fade" id="productosModal_{{ pedido.id }}" tabindex="-1" aria-labelledby="productosModalLabel_{{ pedido.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productosModalLabel_{{ pedido.id }}">
+                    Detalle de Productos - Pedido #{{ pedido.cod_pedido }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Cliente: {{ pedido.cliente.razon_social_cliente }}</h6>
+                <hr>
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Tamaño</th>
+                            <th class="text-end">Cantidad</th>
+                            <th class="text-end">Precio Unitario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in pedido.producto_set.all %}
+                        <tr>
+                            <td>{{ producto.nombre_producto }}</td>
+                            <td>{{ producto.tipo_producto }}</td>
+                            <td>{{ producto.tamano_producto }}</td>
+                            <td class="text-end">{{ producto.cantidad_producto }}</td>
+                            <td class="text-end">{{ producto.precio_unitario_producto }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No hay productos asociados a este pedido.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

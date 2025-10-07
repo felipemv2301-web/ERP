@@ -1,0 +1,17 @@
+{% load static %}
+
+<form method="post" action="{% url 'facturas:editar_abono' abono.id %}">
+    {% csrf_token %}
+    
+    <p>Factura: <strong>{{ factura.cod_factura }}</strong></p>
+    
+    <p>Saldo máximo disponible para este abono: 
+        <span class="text-danger fw-bold">
+            ${{ saldo_disponible_para_abono|floatformat:2 }} 
+        </span>
+    </p>
+
+    {{ form.as_p }}
+    
+    <button type="submit" class="btn btn-warning mt-3">Guardar Edición de Abono</button>
+</form>
