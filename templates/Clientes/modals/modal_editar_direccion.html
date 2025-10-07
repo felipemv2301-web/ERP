@@ -1,0 +1,8 @@
+<form method="post" id="form-editar-direccion">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <div class="mt-3 text-end">
+    <button type="submit" class="btn btn-success">Guardar Cambios</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+  </div>
+</form>

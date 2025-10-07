@@ -1,0 +1,77 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+
+{% block title %}Agregar Dirección{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <h2>Direcciones de {{ cliente.razon_social_cliente }}/{{ cliente.nombre_fantasia_cliente }}</h2>
+
+    {% if messages %}
+        <div>
+            {% for message in messages %}
+                <div class="alert 
+                            {% if message.tags == 'success' %}alert-success
+                            {% elif message.tags == 'error' %}alert-danger
+                            {% else %}alert-info{% endif %} 
+                            alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if direcciones %}
+        <div class="mb-4">
+            <h4>Direcciones existentes</h4>
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Calle</th>
+                        <th>Número</th>
+                        <th>Ciudad</th>
+                        <th>Comuna</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for direccion in direcciones %}
+                    <tr>
+                        <td>{{ direccion.calle }}</td>
+                        <td>{{ direccion.numero }}</td>
+                        <td>{{ direccion.ciudad }}</td>
+                        <td>{{ direccion.comuna }}</td>
+                        <td>
+                            <form method="post" action="{% url 'clientes:eliminar_direccion' direccion.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <div class="card p-3 mb-4">
+        <h4 class="mb-3">Ingresar nueva dirección</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="mt-3">
+                <a href="{% url 'clientes:listar_clientes' %}" class="btn btn-secondary">Volver al listado</a>
+                <button type="submit" class="btn btn-success">Guardar Dirección</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Aquí puedes añadir scripts adicionales si lo deseas
+</script>
+{% endblock %}

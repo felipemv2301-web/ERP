@@ -1,0 +1,14 @@
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.pdf_file }}
+    <button type="submit">Procesar archivo</button>
+</form>
+
+{% if resultado %}
+    <h3>Resultado:</h3>
+    <pre>{{ resultado }}</pre>
+{% endif %}
+
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}

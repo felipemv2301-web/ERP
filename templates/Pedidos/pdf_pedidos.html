@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Pedidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #e0e0e0;
+        }
+        .pedido-row {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        .productos-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .productos-table th, .productos-table td {
+            border: 1px solid #666;
+            padding: 4px 6px;
+            font-size: 11px;
+        }
+        .productos-table th {
+            background-color: #f2f2f2;
+        }
+        @media print {
+            table {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Pedidos</h1>
+    
+    {% for pedido in pedidos %}
+    <table>
+        <thead>
+            <tr>
+                <th>Orden de Compra</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Total Neto</th>
+                <th>IVA</th>
+                <th>Total Pedido</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="pedido-row">
+                <td>{{ pedido.orden_compra}}</td>
+                <td>{{ pedido.cliente.razon_social_cliente }}</td>
+                <td>{{ pedido.fecha_pedido|date:"d/m/Y" }}</td>
+                <td>{{ pedido.total_neto_pedido|floatformat:2 }}</td>
+                <td>{{ pedido.iva_pedido|floatformat:2 }}</td>
+                <td>{{ pedido.total_pedido|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td colspan="6">
+                    <table class="productos-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Tamaño</th>
+                                <th>Observación</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for producto in pedido.producto_set.all %}
+                            <tr>
+                                <td>{{ producto.nombre_producto }}</td>
+                                <td>{{ producto.tipo_producto }}</td>
+                                <td>{{ producto.tamano_producto }}</td>
+                                <td>{% if producto.observacion_producto %}{{ producto.observacion_producto }}{% else %}-{% endif %}</td>
+                                <td>{{ producto.cantidad_producto }}</td>
+                                <td>{{ producto.precio_unitario_producto|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" style="text-align:center;">No hay productos</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,165 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Cuerpo */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Navbar general */
+.navbar {
+    background-color: #0769e6 !important;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Marca (logo y texto) */
+.navbar-brand {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff !important;
+}
+
+.navbar-brand img {
+    height: 32px;
+    margin-right: 0.5rem;
+}
+
+/* Items del nav */
+.nav-item {
+    margin-right: 1rem;
+}
+
+/* Enlaces del nav */
+.nav-link {
+    color: #ffffff !important;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #d9ecff !important;
+}
+
+/* Dropdown */
+.dropdown-menu {
+    background-color: #095dc2 !important;
+    border-radius: 0.3rem;
+    border: none;
+    padding: 0.3rem 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+    font-size: 0.85rem;
+    padding: 0.45rem 1rem;
+    color: #ffffff !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #ffffff !important;
+    color: #095dc2 !important;
+}
+
+/* Usuario autenticado */
+.d-flex.align-items-center {
+    margin-left: 1rem;
+}
+
+.text-white {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Íconos */
+.nav-link i,
+.d-flex i {
+    font-size: 1rem;
+}
+
+/* Botón hamburguesa */
+.navbar-toggler {
+    border: none;
+    padding: 0.4rem;
+}
+
+.navbar-toggler-icon {
+    filter: brightness(1.2);
+}
+
+/* Ajuste para menú colapsado */
+.navbar-collapse {
+    background-color: #0769e6 !important;
+}
+
+/* Responsive tweaks opcionales */
+@media (max-width: 992px) {
+    .navbar-collapse {
+        padding: 1rem 0.5rem;
+    }
+
+    .dropdown-menu {
+        box-shadow: none;
+    }
+
+    .nav-item {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+}
+
+
+
+/* Suavizar el fondo de las filas */
+.pagado {
+    background-color: #e6f4ea !important;
+    color: #00ff0d !important;
+}
+
+.no-pagado {
+    background-color: #fdeaea !important;
+    color: #ff0015 !important;
+}
+
+/* Mejora visual para botones */
+.btn {
+    border-radius: 0.4rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #dee2e6;
+    color: #000;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffeeba;
+    color: #856404;
+}
+
+.btn-outline-info:hover {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.btn-outline-primary:hover {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.btn-outline-danger:hover {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.btn-outline-success:hover {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}

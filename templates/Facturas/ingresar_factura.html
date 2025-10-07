@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingresar Factura para Pedido {{ pedido.cod_pedido }}</title>
+    
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet"> 
+    
+    <style>
+        /* Mantenemos tu estilo específico */
+        .saldo { font-weight: bold; color: #d91424; }
+    </style>
+</head>
+<body>
+    
+    <div class="container my-5">
+        
+        <h1 class="mb-3">Ingresar Factura para Pedido {{ pedido.cod_pedido }}</h1>
+        <h3 class="text-muted">Cliente: {{ pedido.cliente.razon_social_cliente }}</h3>
+        
+        <div class="alert alert-info py-2">
+            <p class="mb-0">Total Pedido: <strong>{{ pedido.total_pedido }}</strong> | <span class="saldo">Saldo por Facturar: {{ pedido.saldo_por_facturar }}</span></p>
+        </div>
+
+        <a href="{% url 'pedidos:listar_pedidos' %}" class="btn btn-outline-secondary btn-sm mb-4">
+             &larr; Volver a Pedidos
+        </a>
+
+        <div class="card p-4">
+            <h5 class="card-title">Datos de la Factura</h5>
+            <form method="post">
+                {% csrf_token %}
+                {{ factura_form.as_p }}
+                <button type="submit" class="btn btn-primary mt-3">Guardar Factura</button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    
+</body>
+</html>
