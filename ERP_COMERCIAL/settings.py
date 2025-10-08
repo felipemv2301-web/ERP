@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'Facturas',
     'rest_framework',
     'widget_tweaks',
+    'Usuarios',
 ]
 
 MIDDLEWARE = [
@@ -92,7 +93,7 @@ WSGI_APPLICATION = 'ERP_COMERCIAL.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",  # MySQL/MariaDB
-        "NAME": "ERP_COMERCIAL",
+        "NAME": "erp_comercial",
         "USER": "root",
         "PASSWORD": "hatt2309",
         "HOST": "localhost",  
@@ -155,3 +156,6 @@ EMAIL_HOST_USER = "felipemv.2301@gmail.com"
 EMAIL_HOST_PASSWORD = "frthijfythnjagxz"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 '''
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/pedidos/listar/'
+LOGOUT_REDIRECT_URL = '/login/'
