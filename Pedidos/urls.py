@@ -14,6 +14,7 @@ urlpatterns = [
     path('ingresar/', views.ingresar_pedido, name='ingresar_pedido'),
     path('listar/', views.listar_pedidos, name='listar_pedidos'),
     path('editar/<int:pedido_id>/', views.editar_pedido, name='editar_pedido'),
+    path('notificaciones/', views.notificaciones_pedidos, name='notificaciones_pedidos'),
 
     #Crear y procesar archivos para el ingreso del formulario
     #ENDPOINT es: http://127.0.0.1:8000/pedidos/api/procesar-documento/
@@ -26,4 +27,8 @@ urlpatterns = [
     #Crear Archivos Excel
     path('exportar_excel/', exportar_pedidos_excel, name='exportar_excel'),
     path('pedidos/<int:pedido_id>/exportar_excel/', exportar_pedido_excel, name='exportar_pedido_excel'),
+
+
+   
+
 ]

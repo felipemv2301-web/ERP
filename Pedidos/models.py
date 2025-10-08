@@ -3,6 +3,7 @@ from django.db import models
 from Clientes.models import Cliente
 from datetime import date
 from django.db.models import Sum
+from django.shortcuts import render
 
 class Pedido(models.Model):
     cod_pedido = models.CharField(max_length=20, unique=True, blank=True)
@@ -64,3 +65,15 @@ class Pedido(models.Model):
         """Devuelve cuánto falta por facturar del total del pedido."""
         saldo = self.total_pedido - self.total_facturado
         return max(Decimal('0.00'), saldo)  # nunca retorna negativo
+    
+
+def notificaciones_pedidos(request):
+    pedidos_pendientes = [
+        pedido for pedido in Pedido.objects.all()
+        if pedido.saldo_por_facturar > 0
+    ]
+
+    return render(request, 'pedidos/notificaciones.html', {
+        'pedidos_pendientes': pedidos_pendientes,
+        'total_pendientes': len(pedidos_pendientes),
+    })

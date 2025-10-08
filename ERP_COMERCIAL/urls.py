@@ -8,5 +8,6 @@ urlpatterns = [
     path("pedidos/", include("Pedidos.urls")),
     path("facturas/", include("Facturas.urls")),
     path('', include('Usuarios.urls')),  
+    path('despachos/', include('Despachos.urls', namespace='despachos')),
     path('', RedirectView.as_view(url='/login/', permanent=False)),
 ]

@@ -1,0 +1,30 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+
+{% block title %}Notificaciones{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">🔔 Notificaciones de pedidos</h2>
+
+    {% if pedidos_pendientes %}
+        <ul class="list-group shadow-sm">
+            {% for pedido in pedidos_pendientes %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ pedido.cod_pedido }}</strong> – 
+                        {{ pedido.cliente.nombre_fantasia_cliente }}
+                    </div>
+                    <span class="badge bg-primary rounded-pill">
+                        {{ pedido.fecha_pedido|date:"d/m/Y" }}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-warning mt-3 text-center shadow-sm">
+            No hay pedidos pendientes por facturar.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

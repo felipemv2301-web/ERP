@@ -12,6 +12,7 @@ from datetime import datetime
 from Pedidos.services.pdf_parser import procesar_archivo_pdf, procesar_archivo_ocr
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db.models import Q
 
 
 '''
@@ -167,3 +168,21 @@ def procesar_documento_api(request):
         return Response({"pedido": pedido_data, "productos": productos_data})
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+    
+    
+ # ---------------------------------------------
+    # Notificaciones de pedidos pendientes
+# ---------------------------------------------
+
+
+def notificaciones_pedidos(request):
+    pedidos_pendientes = [
+        pedido for pedido in Pedido.objects.all()
+        if pedido.saldo_por_facturar > 0
+    ]
+
+    context = {
+        'pedidos_pendientes': pedidos_pendientes,
+        'total_pendientes': len(pedidos_pendientes),
+    }
+    return render(request, 'Pedidos/notificaciones.html', context)
