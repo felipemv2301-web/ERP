@@ -1,0 +1,75 @@
+<form method="post">
+    {% csrf_token %}
+    <h2>Guía de Despacho - Pedido {{ pedido.cod_pedido }}</h2>
+
+    <!-- Fecha despacho -->
+    <p>
+        <label for="{{ form.fecha_despacho.id_for_label }}">Fecha despacho:</label>
+        {{ form.fecha_despacho }}
+    </p>
+
+    <!-- Dirección entrega (select) -->
+    <p>
+        <label for="{{ form.direccion_entrega.id_for_label }}">Dirección de entrega:</label>
+        <select name="{{ form.direccion_entrega.html_name }}" id="{{ form.direccion_entrega.id_for_label }}">
+            {% for val, text in form.direccion_entrega.field.choices %}
+                <option value="{{ val }}" {% if val == form.direccion_entrega.value %}selected{% endif %}>
+                    {{ text }}
+                </option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <!-- Observación despacho -->
+    <p>
+        <label for="{{ form.observacion_despacho.id_for_label }}">Observación:</label><br>
+        {{ form.observacion_despacho }}
+    </p>
+
+    <h3>Detalles de despacho</h3>
+    {{ formset.management_form }}
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad despachada</th>
+                <th>Repartidor</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody id="detalle-body">
+            {% for f in formset %}
+            <tr class="form-row">
+                <td>{{ f.producto }}</td>
+                <td>{{ f.cantidad_despachada }}</td>
+                <td>{{ f.nombre_repartidor }}</td>
+                <td>{{ f.DELETE }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="button" id="agregar-fila">Agregar producto</button>
+    <button type="submit">Guardar guía</button>
+</form>
+
+<script>
+    // Script para duplicar filas del formset dinámicamente
+    const agregarFilaBtn = document.getElementById('agregar-fila');
+    const detalleBody = document.getElementById('detalle-body');
+    let totalForms = document.querySelector('#id_detalledespacho_set-TOTAL_FORMS');
+
+    agregarFilaBtn.addEventListener('click', function() {
+        const currentFormCount = parseInt(totalForms.value);
+        const newFormHtml = detalleBody.children[0].outerHTML.replace(/-0-/g, `-${currentFormCount}-`);
+        detalleBody.insertAdjacentHTML('beforeend', newFormHtml);
+        totalForms.value = currentFormCount + 1;
+
+        // Limpiar valores de los inputs duplicados
+        const newRow = detalleBody.lastElementChild;
+        newRow.querySelectorAll('input, select').forEach(el => {
+            if(el.type === 'checkbox') el.checked = false;
+            else el.value = '';
+        });
+    });
+</script>

@@ -1,0 +1,38 @@
+{% extends 'Home/base.html' %}
+
+{% block content %}
+<h2>Guías de despacho - Cliente: {{ cliente.razon_social_cliente }}</h2>
+
+{% if guias %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Código Guía</th>
+            <th>Pedido</th>
+            <th>Fecha despacho</th>
+            <th>Dirección entrega</th>
+            <th>Observaciones</th>
+            <th>Detalles</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for guia in guias %}
+        <tr>
+            <td>{{ guia.cod_guia_despacho }}</td>
+            <td>{{ guia.pedido.cod_pedido }}</td>
+            <td>{{ guia.fecha_despacho }}</td>
+            <td>{{ guia.direccion_entrega }}</td>
+            <td>{{ guia.observacion_despacho }}</td>
+            <td>
+                
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No hay guías de despacho registradas para este cliente.</p>
+{% endif %}
+
+<a href="{% url 'pedidos:listar_pedidos' %}" class="btn btn-secondary">Volver al cliente</a>
+{% endblock %}

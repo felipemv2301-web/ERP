@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from Pedidos.services.generador_pdf import pdf_un_pedido, pdf_pedidos
+from Pedidos.services.generador_excel import exportar_pedidos_excel, exportar_pedido_excel
 app_name = "pedidos"
 
 """
@@ -21,4 +22,8 @@ urlpatterns = [
     #Crear Archivos PDF
     path('pdf/pedido/<int:pedido_id>/', pdf_un_pedido, name='pdf_un_pedido'),
     path('pdf/pedidos/', pdf_pedidos, name='pdf_pedidos'),
+
+    #Crear Archivos Excel
+    path('exportar_excel/', exportar_pedidos_excel, name='exportar_excel'),
+    path('pedidos/<int:pedido_id>/exportar_excel/', exportar_pedido_excel, name='exportar_pedido_excel'),
 ]
