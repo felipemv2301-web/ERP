@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import PedidoForm
 from Productos.forms import ProductoFormSet
 from Pedidos.models import Pedido
+from Clientes.models import Cliente
 import datetime
 from django.shortcuts import render
 from django.forms import formset_factory
@@ -148,6 +149,7 @@ API REST, OCR con pytesseract y pdfplumber
 -------------------------------------------------
 '''
 
+
 @api_view(['POST'])
 def procesar_documento_api(request):
     archivo = request.FILES.get("archivo")
@@ -155,25 +157,36 @@ def procesar_documento_api(request):
         return Response({"error": "No se envió ningún archivo"}, status=400)
 
     try:
+        # Procesar archivo según tipo
         if str(archivo.name).lower().endswith((".jpg", ".jpeg", ".png")):
             pedido_data, productos_data = procesar_archivo_ocr(archivo)
         else:
             pedido_data, productos_data = procesar_archivo_pdf(archivo)
 
-        # Formatear fechas y totales
-        pedido_data["fecha_pedido"] = pedido_data.get("fecha_pedido", "")
-        pedido_data["total_neto_pedido"] = str(pedido_data.get("total_neto_pedido", "0.0"))
-        pedido_data["total_pedido"] = str(pedido_data.get("total_pedido", "0.0"))
+        # Buscar el cliente en la base de datos por razon_social
+        cliente_razon = pedido_data.get("cliente", "").strip()
+        cliente_obj = Cliente.objects.filter(razon_social_cliente__iexact=cliente_razon).first()
+        if cliente_obj:
+            pedido_data["cliente_id"] = cliente_obj.id
+            pedido_data["cliente"] = cliente_obj.razon_social_cliente
+        else:
+            pedido_data["cliente_id"] = None
+
+        # Formatear totales para JSON
+        for key in ["total_neto_pedido", "total_pedido"]:
+            if key in pedido_data:
+                pedido_data[key] = str(pedido_data[key])
 
         return Response({"pedido": pedido_data, "productos": productos_data})
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-    
-    
- # ---------------------------------------------
-    # Notificaciones de pedidos pendientes
-# ---------------------------------------------
 
+    
+''' 
+---------------------------------------------
+Notificaciones de pedidos pendientes
+--------------------------------------------- 
+'''
 
 def notificaciones_pedidos(request):
     pedidos_pendientes = [

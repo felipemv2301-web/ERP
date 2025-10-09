@@ -6,101 +6,136 @@ from PIL import Image
 import pytesseract
 import re
 
+import pdfplumber
+import re
+from decimal import Decimal
+from dateutil import parser
+
+def parse_precio(valor):
+    """
+    Convierte un string de precio a float, manejando diferentes formatos:
+    - 1.234,56 -> 1234.56
+    - 1234,56  -> 1234.56
+    - 1234.56  -> 1234.56
+    Ignora espacios y símbolos de moneda.
+    """
+    if not valor:
+        return 0.0
+    val = str(valor).strip().replace(" ", "").replace("$", "")
+    # Formato 1.234,56
+    if val.count(",") == 1 and val.count(".") > 1:
+        val = val.replace(".", "").replace(",", ".")
+    # Formato 1234,56
+    elif val.count(",") == 1 and val.count(".") == 0:
+        val = val.replace(",", ".")
+    # ya está en formato 1234.56
+    try:
+        return float(val)
+    except:
+        return 0.0
+
 def procesar_archivo_pdf(file):
     pedido_data = {}
     productos = []
 
     with pdfplumber.open(file) as pdf:
         for page in pdf.pages:
-            text = page.extract_text()
+            text = page.extract_text() or ""
 
             # -----------------------------
-            # Extraer datos del pedido/orden
+            # Datos principales del pedido
             # -----------------------------
-            if "Cliente:" in text:
-                try:
-                    pedido_data["cliente"] = text.split("Cliente:")[1].split("\n")[0].strip()
-                except:
-                    pedido_data["cliente"] = ""
+            pedido_data["cliente"] = (re.search(r"Cliente:\s*(.+)", text).group(1).strip()
+                                      if re.search(r"Cliente:\s*(.+)", text) else "")
 
-            if "Fecha:" in text:
+            match_fecha = re.search(r"Fecha Pedido:\s*(.+)", text)
+            if match_fecha:
                 try:
-                    fecha_str = text.split("Fecha:")[1].split("\n")[0].strip()
-                    # Convertimos automáticamente a YYYY-MM-DD
-                    fecha_obj = parser.parse(fecha_str, dayfirst=False)  # Ajusta dayfirst según tu PDF
+                    fecha_obj = parser.parse(match_fecha.group(1).strip(), dayfirst=True)
                     pedido_data["fecha_pedido"] = fecha_obj.strftime("%Y-%m-%d")
-                except Exception as e:
-                    print("Error procesando fecha:", fecha_str, e)
+                except Exception:
                     pedido_data["fecha_pedido"] = ""
+            else:
+                pedido_data["fecha_pedido"] = ""
 
-            if "Orden de Compra:" in text:
-                try:
-                    pedido_data["cod_orden_compra"] = text.split("Orden de Compra:")[1].split("\n")[0].strip()
-                except:
-                    pedido_data["cod_orden_compra"] = ""
+            pedido_data["cod_orden_compra"] = (re.search(r"ORDEN DE COMPRA N°\s*(\S+)", text).group(1).strip()
+                                               if re.search(r"ORDEN DE COMPRA N°\s*(\S+)", text) else "")
 
-            if "Total Neto:" in text:
-                try:
-                    neto = text.split("Total Neto:")[1].split("\n")[0].replace(".", "").replace(",", ".").strip()
-                    pedido_data["total_neto_pedido"] = Decimal(neto)
-                except:
-                    pedido_data["total_neto_pedido"] = Decimal("0.0")
+            match_neto = re.search(r"Neto:\s*([\d\.,]+)", text)
+            pedido_data["total_neto_pedido"] = parse_precio(match_neto.group(1)) if match_neto else 0.0
 
-            if "IVA:" in text:
-                try:
-                    iva = text.split("IVA:")[1].split("\n")[0].replace("%", "").replace(",", ".").strip()
-                    pedido_data["iva_pedido"] = Decimal(iva) / 100
-                except:
-                    pedido_data["iva_pedido"] = Decimal("0.19")
+            match_iva = re.search(r"IVA\s*\(([\d\.]+)%\):", text)
+            pedido_data["iva_pedido"] = float(match_iva.group(1))/100 if match_iva else 0.19
 
-            if "Total:" in text:
-                try:
-                    total = text.split("Total:")[1].split("\n")[0].replace(".", "").replace(",", ".").strip()
-                    pedido_data["total_pedido"] = Decimal(total)
-                except:
-                    pedido_data["total_pedido"] = Decimal("0.0")
+            match_total = re.search(r"TOTAL:\s*([\d\.,]+)", text)
+            pedido_data["total_pedido"] = parse_precio(match_total.group(1)) if match_total else 0.0
 
             # -----------------------------
-            # Extraer productos (igual que antes)
+            # Productos
             # -----------------------------
             table = page.extract_table()
             if table:
-                for row in table:
-                    if not row or "Nombre" in row[0] or "Subtotal" in row[0]:
+                header = table[0]
+
+                def buscar_indice(lista, nombres):
+                    for n in nombres:
+                        for i, val in enumerate(lista):
+                            if val and n.lower() in val.lower():
+                                return i
+                    return None
+
+                idx_nombre = buscar_indice(header, ["Tipo"])
+                idx_tipo = buscar_indice(header, ["Material"])
+                idx_tamano = buscar_indice(header, ["Tamaño"])
+                idx_obs = buscar_indice(header, ["Observación"])
+                idx_cantidad = buscar_indice(header, ["Cantidad", "Stock"])
+                idx_precio_unit = buscar_indice(header, ["Precio Unitario", "Precio"])
+
+                if idx_precio_unit is None:
+                    print("Advertencia: no se encontró columna 'Precio Unitario' en la tabla del PDF")
+
+                for row in table[1:]:
+                    if not row or all(cell is None for cell in row):
                         continue
                     try:
+                        cantidad = int((row[idx_cantidad] or "0").replace(".", "").replace(",", "").strip()) \
+                            if idx_cantidad is not None else 0
+                        precio_unitario = parse_precio(row[idx_precio_unit] if idx_precio_unit is not None else "0")
+
                         productos.append({
-                            "nombre_producto": (row[0] or "").strip(),
-                            "tipo_producto": (row[1] or "").strip(),
-                            "tamano_producto": (row[2] or "").strip(),
-                            "observacion_producto": (row[3] or "").strip(),
-                            "cantidad_producto": int(row[4].replace(",", "")) if row[4] else 0,
-                            "precio_unitario_producto": Decimal(row[5].replace(",", "")) if row[5] else Decimal("0.0")
+                            "nombre_producto": (row[idx_nombre] or "").strip() if idx_nombre is not None else "",
+                            "tipo_producto": (row[idx_tipo] or "").strip() if idx_tipo is not None else "",
+                            "tamano_producto": (row[idx_tamano] or "No definido").strip() if idx_tamano is not None else "No definido",
+                            "observacion_producto": (row[idx_obs] or "").strip() if idx_obs is not None else "",
+                            "cantidad_producto": cantidad,
+                            "precio_unitario_producto": precio_unitario
                         })
                     except Exception as e:
                         print("Error procesando fila tabla:", row, e)
-            else:  # Fallback texto corrido
+            else:
+                # Fallback línea a línea
                 for line in text.splitlines():
                     if "Subtotal" in line or "Nombre" in line:
                         continue
                     parts = line.split()
                     if len(parts) >= 5:
                         try:
-                            cantidad = int(parts[-2].replace(",", ""))
-                            precio = Decimal(parts[-1].replace(",", ""))
+                            cantidad = int(parts[-2].replace(".", "").replace(",", ""))
+                            precio_unitario = parse_precio(parts[-1])
                             nombre = " ".join(parts[:-2])
                             productos.append({
                                 "nombre_producto": nombre,
                                 "tipo_producto": "",
-                                "tamano_producto": "",
+                                "tamano_producto": "No definido",
                                 "observacion_producto": "",
                                 "cantidad_producto": cantidad,
-                                "precio_unitario_producto": precio
+                                "precio_unitario_producto": precio_unitario
                             })
                         except Exception as e:
                             print("Error procesando línea:", line, e)
 
     return pedido_data, productos
+
 
 def procesar_archivo_ocr(file):
     # Datos principales del pedido
