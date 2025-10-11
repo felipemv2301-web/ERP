@@ -2,6 +2,7 @@ from django.db import models
 from Pedidos.models import Pedido
 from datetime import date
 from Productos.models import Producto
+from Clientes.models import DireccionCliente
 
 class GuiaDespacho(models.Model):
     #Asociación fuerte. Guía es parte del pedido.
@@ -10,7 +11,7 @@ class GuiaDespacho(models.Model):
     fecha_despacho = models.DateField(default=date.today)
 
     #Revisar como acceder a la dirección del cliente específico
-    direccion_entrega = models.CharField(max_length=200)
+    direccion_entrega = models.ForeignKey(DireccionCliente, on_delete=models.SET_NULL, null=True, blank=True)
     observacion_despacho = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):

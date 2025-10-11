@@ -16,7 +16,6 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="container my-5">
     <h1>Lista de Pedidos</h1>
     
@@ -46,23 +45,13 @@
                     <td>{{ pedido.total_pedido }}</td>
                     
                     <td class="text-center">
-                        <button 
-                            type="button" 
-                            class="btn btn-info btn-sm" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#productosModal_{{ pedido.id }}" 
-                        >
+                        <button type="button" class="btn btn-info btn-sm btn-ver-productos" data-id="{{ pedido.id }}">
                             Detalle ({{ pedido.producto_set.count }})
                         </button>
                     </td>
                     
                     <td class="text-center">
-                         <button 
-                            type="button" 
-                            class="btn btn-warning btn-sm" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#facturasModal_{{ pedido.id }}" 
-                        >
+                        <button type="button" class="btn btn-warning btn-sm btn-ver-facturas" data-id="{{ pedido.id }}">
                             Facturas ({{ pedido.factura_set.count }})
                         </button>
                     </td>
@@ -72,6 +61,9 @@
                         <a href="{% url 'pedidos:editar_pedido' pedido.id %}" class="btn btn-warning btn-sm mb-1">Editar Pedido</a>
                         <a href="{% url 'facturas:ingresar_factura' pedido.id %}" class="btn btn-primary btn-sm">Ingresar Factura</a>
                         <a href="{% url 'despachos:ingresar_guia' pedido.id %}" class="btn btn-info btn-sm mb-1">Ingresar Guía</a>
+                        <button type="button" class="btn btn-secondary btn-sm btn-ver-despachos" data-id="{{ pedido.id }}">
+                            Despachos ({{ pedido.guia_despacho_set.count }})
+                        </button>
                         <a href="{% url 'pedidos:exportar_pedido_excel' pedido.id %}" class="btn btn-success">
                             Exportar a Excel
                         </a>
@@ -82,36 +74,102 @@
         </table>
     </div>
 
-    <a href="{% url 'pedidos:exportar_excel' %}" class="btn btn-success">
+    <a href="{% url 'pedidos:exportar_excel' %}" class="btn btn-success mt-3">
         Descargar Excel
     </a>
 </div>
 
+<!-- Modal Productos -->
+<div class="modal fade" id="productosModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-body" id="productosModalBody">
+        <div class="text-center py-5">
+          <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-<!-- Cambiar por modal Ajax -->
-{% for pedido in pedidos %}
-    {% include "pedidos/modals/modal_productos.html" %}
-    {% include "pedidos/modals/modal_facturas.html" %}
-{% endfor %}
+<!-- Modal Facturas -->
+<div class="modal fade" id="facturasModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-body" id="facturasModalBody">
+        <div class="text-center py-5">
+          <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- Modal Despachos -->
+<div class="modal fade" id="despachosModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-body" id="despachosModalBody">
+        <div class="text-center py-5">
+          <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    $(document).ready(function() {
-        // Inicialización de DataTables
-        $('#tablaPedidos').DataTable({
-            language: {
-                url: '{% static "vendor/datatables/i18n/es-ES.json" %}',
-            },
-            columnDefs: [
-                { targets: 6, orderable: false, searchable: false }, // Productos
-                { targets: 7, orderable: false, searchable: false }, // Facturas
-                { targets: 8, orderable: false, searchable: false }  // Acción
-            ]
+$(document).ready(function() {
+    // Inicializar DataTables
+    $('#tablaPedidos').DataTable({
+        language: { url: '{% static "vendor/datatables/i18n/es-ES.json" %}' },
+        columnDefs: [
+            { targets: 6, orderable: false, searchable: false },
+            { targets: 7, orderable: false, searchable: false },
+            { targets: 8, orderable: false, searchable: false }
+        ]
+    });
+
+    // AJAX Productos
+    $('.btn-ver-productos').on('click', function() {
+        let pedidoId = $(this).data('id');
+        $('#productosModal').modal('show');
+        $('#productosModalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...</div>');
+
+        $.ajax({
+            url: '/pedidos/pedido/' + pedidoId + '/modal_productos/',
+            success: function(data) { $('#productosModalBody').html(data); },
+            error: function() { $('#productosModalBody').html('<p class="text-danger text-center">Error cargando productos.</p>'); }
         });
     });
-</script>
 
-<!-- Insertar el script que llama al modal con Ajax -->
+    // AJAX Facturas
+    $('.btn-ver-facturas').on('click', function() {
+        let pedidoId = $(this).data('id');
+        $('#facturasModal').modal('show');
+        $('#facturasModalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...</div>');
+
+        $.ajax({
+            url: '/pedidos/pedido/' + pedidoId + '/modal_facturas/',
+            success: function(data) { $('#facturasModalBody').html(data); },
+            error: function() { $('#facturasModalBody').html('<p class="text-danger text-center">Error cargando facturas.</p>'); }
+        });
+    });
+
+    // AJAX Despachos
+    $('.btn-ver-despachos').on('click', function() {
+        let pedidoId = $(this).data('id');
+        $('#despachosModal').modal('show');
+        $('#despachosModalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...</div>');
+
+        $.ajax({
+            url: '/pedidos/pedido/' + pedidoId + '/modal_despachos/',
+            success: function(data) { $('#despachosModalBody').html(data); },
+            error: function() { $('#despachosModalBody').html('<p class="text-danger text-center">Error cargando despachos.</p>'); }
+        });
+    });
+});
+</script>
 {% endblock %}

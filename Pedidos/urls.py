@@ -27,7 +27,8 @@ urlpatterns = [
     path('exportar_excel/', exportar_pedidos_excel, name='exportar_excel'),
     path('pedidos/<int:pedido_id>/exportar_excel/', exportar_pedido_excel, name='exportar_pedido_excel'),
 
-
-   
-
+    #Listar Facturas, Productos y Guías
+    path('pedido/<int:pedido_id>/modal_productos/', views.listar_productos, name='listar_productos'),
+    path('pedido/<int:pedido_id>/modal_facturas/', views.listar_facturas, name='listar_facturas'),
+    path('pedido/<int:pedido_id>/modal_despachos/', views.listar_despachos, name='listar_despachos'),
 ]

@@ -17,7 +17,7 @@ def ingresar_cliente(request):
         form = ClienteForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "✅ Cliente ingresado correctamente.")
+            messages.success(request, "Cliente ingresado correctamente.")
             return redirect("clientes:listar_clientes")
         else:
             messages.error(request, "Ocurrió un error al guardar el cliente. Revisa los datos ingresados.")

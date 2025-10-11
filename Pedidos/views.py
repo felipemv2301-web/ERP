@@ -4,6 +4,7 @@ from .forms import PedidoForm
 from Productos.forms import ProductoFormSet
 from Pedidos.models import Pedido
 from Clientes.models import Cliente
+from Despachos.models import GuiaDespacho
 import datetime
 from django.shortcuts import render
 from django.forms import formset_factory
@@ -14,7 +15,6 @@ from Pedidos.services.pdf_parser import procesar_archivo_pdf, procesar_archivo_o
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
-
 
 '''
 -------------------------------------------------
@@ -199,3 +199,36 @@ def notificaciones_pedidos(request):
         'total_pendientes': len(pedidos_pendientes),
     }
     return render(request, 'Pedidos/notificaciones.html', context)
+
+''' 
+---------------------------------------------
+Listar de Facturas, Productos y Guías
+--------------------------------------------- 
+'''
+
+# Productos AJAX
+def listar_productos(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    productos = pedido.producto_set.all()  # todos los productos del pedido
+    return render(request, 'Pedidos/modals/modal_productos.html', {
+        'pedido': pedido,
+        'productos': productos
+    })
+
+# Facturas AJAX
+def listar_facturas(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    facturas = pedido.factura_set.all()
+    return render(request, 'Pedidos/modals/modal_facturas.html', {
+        'pedido': pedido,
+        'facturas': facturas
+    })
+
+# Despachos AJAX 
+def listar_despachos(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    guias = pedido.guiadespacho_set.prefetch_related('detalledespacho_set').all()
+    return render(request, "Pedidos/modals/modal_despachos.html", {
+        "pedido": pedido,
+        "guias": guias
+    })
