@@ -66,14 +66,3 @@ class Pedido(models.Model):
         saldo = self.total_pedido - self.total_facturado
         return max(Decimal('0.00'), saldo)  # nunca retorna negativo
     
-
-def notificaciones_pedidos(request):
-    pedidos_pendientes = [
-        pedido for pedido in Pedido.objects.all()
-        if pedido.saldo_por_facturar > 0
-    ]
-
-    return render(request, 'pedidos/notificaciones.html', {
-        'pedidos_pendientes': pedidos_pendientes,
-        'total_pendientes': len(pedidos_pendientes),
-    })

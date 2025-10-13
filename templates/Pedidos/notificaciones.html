@@ -8,19 +8,57 @@
     <h2 class="mb-4">🔔 Notificaciones de pedidos</h2>
 
     {% if pedidos_pendientes %}
-        <ul class="list-group shadow-sm">
+        <div class="list-group shadow-sm">
             {% for pedido in pedidos_pendientes %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ pedido.cod_pedido }}</strong> – 
-                        {{ pedido.cliente.nombre_fantasia_cliente }}
+                <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="me-3">
+                        <h5 class="mb-1 text-primary">
+                            <strong>{{ pedido.cod_pedido }}</strong>
+                        </h5>
+                        <p class="mb-0 text-muted">
+                            Cliente: {{ pedido.cliente.nombre_fantasia_cliente }}
+                        </p>
+                        <small class="text-secondary">
+                            Fecha: {{ pedido.fecha_pedido|date:"d/m/Y" }}
+                        </small>
                     </div>
-                    <span class="badge bg-primary rounded-pill">
-                        {{ pedido.fecha_pedido|date:"d/m/Y" }}
-                    </span>
-                </li>
+
+                    <div class="text-end">
+                        <p class="mb-0">
+                            💰 <strong>Total:</strong> ${{ pedido.total_pedido|floatformat:0 }}
+                        </p>
+                        <p class="mb-0">
+                            🧾 <strong>Facturado:</strong> ${{ pedido.total_facturado|default:0|floatformat:0 }}
+                        </p>
+                        <p class="mb-0 text-danger">
+                            ⏳ <strong>Saldo:</strong> $
+                            {% if pedido.total_facturado %}
+                                {{ pedido.total_pedido|floatformat:0|add:"-"|add:pedido.total_facturado|floatformat:0 }}
+                            {% else %}
+                                {{ pedido.total_pedido|floatformat:0 }}
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="ms-auto mt-2">
+                        {% if pedido.factura_set.exists %}
+                            {% with primera_factura=pedido.factura_set.first %}
+                                <span class="badge 
+                                    {% if primera_factura.estado_factura == 'Pagada' %}bg-success
+                                    {% elif primera_factura.estado_factura == 'Pendiente' %}bg-warning text-dark
+                                    {% else %}bg-secondary
+                                    {% endif %}
+                                ">
+                                    {{ primera_factura.estado_factura }}
+                                </span>
+                            {% endwith %}
+                        {% else %}
+                            <span class="badge bg-secondary">Sin Facturas</span>
+                        {% endif %}
+                    </div>
+                </div>
             {% endfor %}
-        </ul>
+        </div>
     {% else %}
         <div class="alert alert-warning mt-3 text-center shadow-sm">
             No hay pedidos pendientes por facturar.

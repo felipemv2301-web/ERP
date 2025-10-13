@@ -13,8 +13,7 @@ from datetime import datetime
 from Pedidos.services.pdf_parser import procesar_archivo_pdf, procesar_archivo_ocr
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.db.models import Q
-
+from django.db.models import Q, Sum, F
 
 '''
 -------------------------------------------------
@@ -199,3 +198,23 @@ def notificaciones_pedidos(request):
         'total_pendientes': len(pedidos_pendientes),
     }
     return render(request, 'Pedidos/notificaciones.html', context)
+
+def notificaciones_pedidos(request):
+    pedidos_pendientes = (
+        Pedido.objects
+        .annotate(
+            total_facturado_db=Sum(  
+                'factura__total_factura',
+                filter=~Q(factura__estado_factura='Anulada')
+            )
+        )
+        .filter(
+            Q(total_facturado_db__lt=F('total_pedido')) |
+            Q(total_facturado_db__isnull=True)
+        )
+        .distinct()
+    )
+
+    return render(request, 'Pedidos/notificaciones.html', {
+        'pedidos_pendientes': pedidos_pendientes
+    })
