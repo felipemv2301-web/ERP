@@ -12,6 +12,11 @@ from .models import GuiaDespacho, DetalleDespacho
 from .forms import GuiaDespachoForm, DetalleDespachoFormSet
 from django.http import JsonResponse
 
+from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from django.db.models import Sum
+
 def ingresar_guia_despacho(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     cliente = pedido.cliente
@@ -83,20 +88,24 @@ def ingresar_guia_despacho(request, pedido_id):
                         despachado_formset[producto.id] += cantidad
 
             if error_en_cantidades:
-                if request.headers.get("x-requested-with") == "XMLHttpRequest":
-                    return JsonResponse({"success": False, "errors": errores})
+                # Enviar errores al template usando messages
                 for e in errores:
                     messages.error(request, e)
+
+                # Si es Ajax, también retornamos JSON
+                if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                    return JsonResponse({"success": False, "errors": errores})
             else:
                 formset.save()
+                messages.success(request, "Guía de despacho ingresada correctamente.")
                 if request.headers.get("x-requested-with") == "XMLHttpRequest":
                     return JsonResponse({"success": True, "message": "Guía de despacho ingresada correctamente."})
-                messages.success(request, "Guía de despacho ingresada correctamente.")
                 return redirect('despachos:listar_guia_despacho', pedido_id=pedido.id)
+
         else:
+            messages.error(request, "Por favor corrija los errores en el formulario.")
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "errors": ["Por favor corrija los errores en el formulario."]})
-            messages.error(request, "Por favor corrija los errores en el formulario.")
 
     else:
         form = GuiaDespachoForm(cliente=cliente)
@@ -112,7 +121,6 @@ def ingresar_guia_despacho(request, pedido_id):
         'cliente': cliente,
         'productos_info': productos_info,
     })
-
 
 # Endpoint AJAX para obtener restante dinámicamente
 def ajax_restante_producto(request, pedido_id):

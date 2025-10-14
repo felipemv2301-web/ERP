@@ -1,11 +1,5 @@
-{# Este template asume que el objeto 'pedido' está disponible en el contexto #}
-                <h5 class="modal-title" id="productosModalLabel_{{ pedido.id }}">
-                    Detalle de Productos - Pedido #{{ pedido.cod_pedido }}
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+
             <div class="modal-body">
-                <h6>Cliente: {{ pedido.cliente.razon_social_cliente }}</h6>
                 <hr>
                 <table class="table table-sm table-striped">
                     <thead>

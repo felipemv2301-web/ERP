@@ -149,7 +149,6 @@ API REST, OCR con pytesseract y pdfplumber
 -------------------------------------------------
 '''
 
-
 @api_view(['POST'])
 def procesar_documento_api(request):
     archivo = request.FILES.get("archivo")
@@ -219,9 +218,9 @@ def listar_productos(request, pedido_id):
 def listar_facturas(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     facturas = pedido.factura_set.all()
-    return render(request, 'Pedidos/modals/modal_facturas.html', {
-        'pedido': pedido,
-        'facturas': facturas
+    return render(request, "Pedidos/modals/modal_facturas.html", {
+        "pedido": pedido,
+        "facturas": facturas
     })
 
 # Despachos AJAX 

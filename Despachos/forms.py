@@ -71,7 +71,6 @@ DetalleDespachoFormSet = inlineformset_factory(
     GuiaDespacho,
     DetalleDespacho,
     form=DetalleDespachoForm,
-    formset=BaseDetalleDespachoFormSet,
     extra=1,
     can_delete=True
 )

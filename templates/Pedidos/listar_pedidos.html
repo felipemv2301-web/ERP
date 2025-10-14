@@ -51,7 +51,11 @@
                     </td>
                     
                     <td class="text-center">
-                        <button type="button" class="btn btn-warning btn-sm btn-ver-facturas" data-id="{{ pedido.id }}">
+                        <button 
+                            type="button" 
+                            class="btn btn-warning btn-sm btn-ver-facturas" 
+                            data-id="{{ pedido.id }}"
+                        >
                             Facturas ({{ pedido.factura_set.count }})
                         </button>
                     </td>
@@ -79,10 +83,15 @@
     </a>
 </div>
 
+{% for pedido in pedidos %}
 <!-- Modal Productos -->
 <div class="modal fade" id="productosModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Productos de: {{ pedido.cod_pedido }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
       <div class="modal-body" id="productosModalBody">
         <div class="text-center py-5">
           <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
@@ -96,6 +105,10 @@
 <div class="modal fade" id="facturasModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Facturas del Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
       <div class="modal-body" id="facturasModalBody">
         <div class="text-center py-5">
           <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
@@ -109,6 +122,10 @@
 <div class="modal fade" id="despachosModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Despachos del Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
       <div class="modal-body" id="despachosModalBody">
         <div class="text-center py-5">
           <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
@@ -117,6 +134,8 @@
     </div>
   </div>
 </div>
+{% endfor %}
+
 {% endblock %}
 
 {% block scripts %}
@@ -146,15 +165,21 @@ $(document).ready(function() {
     });
 
     // AJAX Facturas
-    $('.btn-ver-facturas').on('click', function() {
-        let pedidoId = $(this).data('id');
-        $('#facturasModal').modal('show');
-        $('#facturasModalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...</div>');
+    $(document).ready(function(){
+        $('.btn-ver-facturas').on('click', function(){
+            let pedidoId = $(this).data('id');
+            $('#facturasModal').modal('show');
+            $('#facturasModalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...</div>');
 
-        $.ajax({
-            url: '/pedidos/pedido/' + pedidoId + '/modal_facturas/',
-            success: function(data) { $('#facturasModalBody').html(data); },
-            error: function() { $('#facturasModalBody').html('<p class="text-danger text-center">Error cargando facturas.</p>'); }
+            $.ajax({
+                url: '/pedidos/pedido/' + pedidoId + '/modal_facturas/',
+                success: function(data){
+                    $('#facturasModalBody').html(data);
+                },
+                error: function(){
+                    $('#facturasModalBody').html('<p class="text-danger text-center">Error cargando facturas.</p>');
+                }
+            });
         });
     });
 
