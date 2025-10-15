@@ -1,9 +1,4 @@
 {# Este template asume que el objeto 'pedido' está disponible en el contexto #}
-
-<div class="modal fade" id="productosModal_{{ pedido.id }}" tabindex="-1" aria-labelledby="productosModalLabel_{{ pedido.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
                 <h5 class="modal-title" id="productosModalLabel_{{ pedido.id }}">
                     Detalle de Productos - Pedido #{{ pedido.cod_pedido }}
                 </h5>
@@ -42,6 +37,3 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
-        </div>
-    </div>
-</div>

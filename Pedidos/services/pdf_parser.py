@@ -84,8 +84,8 @@ def procesar_archivo_pdf(file):
                                 return i
                     return None
 
-                idx_nombre = buscar_indice(header, ["Tipo"])
-                idx_tipo = buscar_indice(header, ["Material"])
+                idx_nombre = buscar_indice(header, ["Nombre"])
+                idx_tipo = buscar_indice(header, ["Tipo"])
                 idx_tamano = buscar_indice(header, ["Tamaño"])
                 idx_obs = buscar_indice(header, ["Observación"])
                 idx_cantidad = buscar_indice(header, ["Cantidad", "Stock"])

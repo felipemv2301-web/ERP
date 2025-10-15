@@ -1,5 +1,6 @@
 from django.db import models
 from Pedidos.models import Pedido
+from django.apps import apps
 
 class Producto(models.Model):
     TAMANO_CHOICES = [

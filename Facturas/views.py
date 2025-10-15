@@ -48,7 +48,6 @@ def listar_facturas_ajax(request):
     return render(request, 'pedidos/modals/modal_facturas.html', {'pedido': pedido})
 
 
-
 #Permite ingresar abonos luego de ingresar la factura.
 def detalle_factura(request, factura_id):
     factura = get_object_or_404(Factura, id=factura_id)
