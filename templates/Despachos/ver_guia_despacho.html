@@ -1,0 +1,93 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+
+{% block title %}Guía de Despacho {{ guia.id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.card-guia {
+    border: 1px solid #0d6efd;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    background-color: #f8f9fa;
+}
+
+.card-guia h3 {
+    color: #0d6efd;
+    margin-bottom: 20px;
+}
+
+.table-guia {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.table-guia th, .table-guia td {
+    border: 1px solid #dee2e6;
+    padding: 8px;
+    text-align: center;
+}
+
+.table-guia th {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.table-guia td {
+    background-color: #ffffff;
+}
+
+.total-row {
+    font-weight: bold;
+    background-color: #e9ecef;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="card-guia">
+        <h3>Guía de Despacho {{ guia.cod_guia_despacho }}</h3>
+        <p><strong>Pedido:</strong> {{ guia.pedido.cod_pedido }}</p>
+        <p><strong>Cliente:</strong> {{ guia.pedido.cliente.razon_social_cliente }}</p>
+        <p><strong>Fecha Despacho:</strong> {{ guia.fecha_despacho|date:"d/m/Y" }}</p>
+        <p><strong>Responsable:</strong> {{ guia.responsable }}</p>
+
+        <table class="table-guia">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Tipo</th>
+                    <th>Tamaño</th>
+                    <th>Cantidad Despachada</th>
+                    <th>Precio Unitario</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in detalles %}
+                <tr>
+                    <td>{{ d.producto.nombre_producto }}</td>
+                    <td>{{ d.producto.tipo_producto }}</td>
+                    <td>{{ d.producto.tamano_producto }}</td>
+                    <td>{{ d.cantidad_despachada }}</td>
+                    <td>{{ d.producto.precio_unitario_producto }}</td>
+                    <td>{{ d.total_pedido|floatformat:2 }}</td> 
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="mt-3 text-end">
+            <a href="{% url 'despachos:editar_guia_despacho' guia.id %}" class="btn btn-warning">
+                <i class="fas fa-edit me-1"></i> Editar
+            </a>
+            <a href="{% url 'pedidos:listar_pedidos' %}" class="btn btn-danger">
+                <i class="fa fa-arrow-left me-1"></i> Volver a Pedidos
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

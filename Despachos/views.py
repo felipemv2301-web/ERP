@@ -1,8 +1,9 @@
+from django.forms import inlineformset_factory
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from Despachos.models import GuiaDespacho, DetalleDespacho
 from Pedidos.models import Pedido
-from Despachos.forms import GuiaDespachoForm, DetalleDespachoFormSet
+from Despachos.forms import DetalleDespachoForm, GuiaDespachoForm, DetalleDespachoFormSet
 from django.http import JsonResponse
 from django.db.models import Sum
 
@@ -138,3 +139,123 @@ def listar_guias_despacho(request, pedido_id):
         'guias': guias,
     })
 
+def ver_guia_despacho(request, guia_id):
+    guia = get_object_or_404(GuiaDespacho, id=guia_id)
+    detalles = DetalleDespacho.objects.filter(guia_despacho=guia).select_related('producto')
+    
+    return render(request, 'despachos/ver_guia_despacho.html', {
+        'guia': guia,
+        'detalles': detalles,
+    })
+
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
+from django.forms import inlineformset_factory
+from django.db.models import Sum
+from django.http import JsonResponse
+from Despachos.models import GuiaDespacho, DetalleDespacho
+from Despachos.forms import GuiaDespachoForm, DetalleDespachoForm
+
+def editar_guia_despacho(request, guia_id):
+    guia = get_object_or_404(GuiaDespacho, id=guia_id)
+    pedido = guia.pedido
+    cliente = pedido.cliente
+    productos = pedido.producto_set.all()
+
+    # Calcular despachos previos excluyendo esta guía
+    despachado_db = {
+        p.id: DetalleDespacho.objects.filter(
+            producto=p,
+            guia_despacho__pedido=pedido
+        ).exclude(guia_despacho=guia).aggregate(total=Sum('cantidad_despachada'))['total'] or 0
+        for p in productos
+    }
+
+    # Preparar información de productos
+    productos_info = []
+    for p in productos:
+        total = p.cantidad_producto or 0
+        despachado = despachado_db.get(p.id, 0)
+        restante = max(total - despachado, 0)
+        productos_info.append({
+            "id": p.id,
+            "nombre": p.nombre_producto,
+            "tipo": getattr(p, "tipo_producto", ""),
+            "tamano": getattr(p, "tamano_producto", ""),
+            "precio": getattr(p, "precio_unitario_producto", 0),
+            "cantidad_total": total,
+            "despachado": despachado,
+            "restante": restante,
+        })
+
+    # Formset para edición (extra=0)
+    DetalleDespachoFormSetCustom = inlineformset_factory(
+        GuiaDespacho,
+        DetalleDespacho,
+        form=DetalleDespachoForm,
+        extra=0,
+        can_delete=True
+    )
+
+    if request.method == 'POST':
+        form = GuiaDespachoForm(request.POST, instance=guia, cliente=cliente)
+        formset = DetalleDespachoFormSetCustom(request.POST, instance=guia, form_kwargs={'pedido': pedido})
+
+        if form.is_valid() and formset.is_valid():
+            guia = form.save(commit=False)
+            guia.pedido = pedido
+            guia.save()
+            formset.instance = guia
+
+            # Validar cantidades despachadas
+            despachado_formset = {p['id']: 0 for p in productos_info}
+            errores = []
+            error_en_cantidades = False
+
+            for f in formset:
+                if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
+                    producto = f.cleaned_data.get('producto')
+                    cantidad = f.cleaned_data.get('cantidad_despachada', 0)
+                    if not producto:
+                        errores.append("Debe seleccionar un producto en todos los detalles.")
+                        error_en_cantidades = True
+                        continue
+
+                    restante_real = next(p['restante'] for p in productos_info if p['id'] == producto.id) - despachado_formset[producto.id]
+
+                    if cantidad > restante_real:
+                        errores.append(
+                            f"No se puede despachar {cantidad} de '{producto.nombre_producto}'. "
+                            f"Cantidad restante disponible: {restante_real}."
+                        )
+                        error_en_cantidades = True
+                    else:
+                        despachado_formset[producto.id] += cantidad
+
+            if error_en_cantidades:
+                for e in errores:
+                    messages.error(request, e)
+                if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                    return JsonResponse({"success": False, "errors": errores})
+            else:
+                formset.save()
+                messages.success(request, "Guía de despacho actualizada correctamente.")
+                if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                    return JsonResponse({"success": True, "message": "Guía de despacho actualizada correctamente."})
+                return redirect('despachos:ver_guia_despacho', guia_id=guia.id)
+        else:
+            messages.error(request, "Por favor corrija los errores en el formulario.")
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({"success": False, "errors": ["Por favor corrija los errores en el formulario."]})
+    else:
+        form = GuiaDespachoForm(instance=guia, cliente=cliente)
+        formset = DetalleDespachoFormSetCustom(instance=guia, form_kwargs={'pedido': pedido})
+
+    return render(request, 'despachos/editar_guia_despacho.html', {
+        'form': form,
+        'formset': formset,
+        'pedido': pedido,
+        'cliente': cliente,
+        'productos_info': productos_info,
+        'editar': True,
+    })

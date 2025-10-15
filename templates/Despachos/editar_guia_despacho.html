@@ -1,0 +1,212 @@
+{% extends 'Home/base.html' %}
+{% load widget_tweaks %}
+{% load dict_filters %}
+
+{% block titulo %}Editar Guía de Despacho - Pedido {{ pedido.cod_pedido }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-info text-white justify-content-between align-items-center">
+            <h2 class="mb-0"><i class="fas fa-edit me-2"></i> Editar Guía de Despacho - Pedido {{ pedido.cod_pedido }}</h2>
+        </div>
+
+        <div class="card-body">
+
+        <!-- Mensajes de validación -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert 
+                    {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} 
+                    alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Datos generales -->
+                <div class="mb-4">
+                    <h4 class="border-bottom pb-2 text-primary">Datos Generales</h4>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label" for="{{ form.fecha_despacho.id_for_label }}">Fecha de despacho:</label>
+                            {{ form.fecha_despacho|add_class:"form-control" }}
+                            {% if form.fecha_despacho.errors %}
+                                <div class="text-danger small">{{ form.fecha_despacho.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label" for="{{ form.direccion_entrega.id_for_label }}">Dirección de entrega:</label>
+                            <select name="{{ form.direccion_entrega.html_name }}" id="{{ form.direccion_entrega.id_for_label }}" class="form-select">
+                                {% for direccion in pedido.cliente.direccioncliente_set.all %}
+                                    <option value="{{ direccion.id }}"
+                                        {% if form.direccion_entrega.value == direccion.id %}selected{% endif %}>
+                                        {{ direccion.calle }} {{ direccion.numero }}, {{ direccion.comuna }}, {{ direccion.ciudad }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.direccion_entrega.errors %}
+                                <div class="text-danger small">{{ form.direccion_entrega.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label" for="{{ form.observacion_despacho.id_for_label }}">Observación:</label>
+                            {{ form.observacion_despacho|add_class:"form-control"|attr:"rows:2" }}
+                            {% if form.observacion_despacho.errors %}
+                                <div class="text-danger small">{{ form.observacion_despacho.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalle del despacho -->
+                <div class="mb-4">
+                    <h4 class="border-bottom pb-2 text-black">Detalles del Despacho</h4>
+                    {{ formset.management_form }}
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle text-center" id="detalle-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad Despachada</th>
+                                    <th>Repartidor</th>
+                                    <th>Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalle-body">
+                                {% for f in formset %}
+                                <tr class="form-row">
+                                    <td>
+                                        <select name="{{ f.producto.html_name }}" class="form-select producto-select">
+                                            <option value="">Seleccione producto</option>
+                                            {% for p in productos_info %}
+                                                <option value="{{ p.id }}"
+                                                    data-restante="{{ p.restante }}"
+                                                    {% if f.producto.value == p.id %}selected{% endif %}>
+                                                    {{ p.nombre }} - {{ p.tipo }} - {{ p.tamano }} - Restante: {{ p.restante }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if f.producto.errors %}
+                                            <div class="text-danger small">{{ f.producto.errors|striptags }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ f.cantidad_despachada|add_class:"form-control text-end" }}
+                                        {% if f.cantidad_despachada.errors %}
+                                            <div class="text-danger small">{{ f.cantidad_despachada.errors|striptags }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ f.nombre_repartidor|add_class:"form-control" }}
+                                        {% if f.nombre_repartidor.errors %}
+                                            <div class="text-danger small">{{ f.nombre_repartidor.errors|striptags }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm eliminar-fila">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <!-- Input DELETE oculto pero funcional -->
+                                        {{ f.DELETE|add_class:"delete-checkbox" }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" id="agregar-fila" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i> Agregar Producto
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Actualizar Guía
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const detalleBody = document.getElementById('detalle-body');
+    const totalForms = document.querySelector('#id_detalledespacho_set-TOTAL_FORMS');
+    const agregarFilaBtn = document.getElementById('agregar-fila');
+
+    function initPopovers() {
+        document.querySelectorAll('.producto-select').forEach(select => {
+            const popover = new bootstrap.Popover(select, {
+                trigger: 'focus',
+                placement: 'bottom',
+                content: () => {
+                    const opt = select.options[select.selectedIndex];
+                    if (!opt || !opt.value) return 'No hay detalles';
+                    return `Tipo: ${opt.dataset.tipo} <br> Tamaño: ${opt.dataset.tamano} <br> Precio: $${opt.dataset.precio}`;
+                }
+            });
+
+            select.addEventListener('change', () => {
+                popover.dispose();
+                new bootstrap.Popover(select, {
+                    trigger: 'focus',
+                    placement: 'bottom',
+                    content: () => {
+                        const opt = select.options[select.selectedIndex];
+                        if (!opt || !opt.value) return 'No hay detalles';
+                        return `Tipo: ${opt.dataset.tipo} <br> Tamaño: ${opt.dataset.tamano} <br> Precio: $${opt.dataset.precio}`;
+                    }
+                });
+            });
+        });
+    }
+
+    initPopovers();
+
+    // Agregar nueva fila
+    agregarFilaBtn.addEventListener('click', () => {
+        const formCount = parseInt(totalForms.value);
+        const templateRow = detalleBody.querySelector('.form-row');
+        if (!templateRow) return;
+
+        const newRow = templateRow.cloneNode(true);
+        newRow.querySelectorAll('input, select').forEach(el => {
+            if(el.name){
+                el.name = el.name.replace(/-\d+-/, `-${formCount}-`);
+                el.id = el.id.replace(/-\d+-/, `-${formCount}-`);
+            }
+            if(el.type === 'checkbox') el.checked = false; // Desmarcar DELETE
+            else el.value = '';
+        });
+
+        newRow.style.display = ''; // asegurar que no esté oculto
+        detalleBody.appendChild(newRow);
+        totalForms.value = formCount + 1;
+
+        initPopovers();
+    });
+
+    // Eliminar fila
+    detalleBody.addEventListener('click', (e) => {
+        if (e.target.closest('.eliminar-fila')) {
+            const row = e.target.closest('tr');
+            const deleteInput = row.querySelector('input.delete-checkbox');
+            if(deleteInput){
+                deleteInput.checked = true;   // marcar para eliminar
+                row.style.display = 'none';  // ocultar fila
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
