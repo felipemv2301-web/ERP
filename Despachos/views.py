@@ -3,17 +3,6 @@ from django.contrib import messages
 from Despachos.models import GuiaDespacho, DetalleDespacho
 from Pedidos.models import Pedido
 from Despachos.forms import GuiaDespachoForm, DetalleDespachoFormSet
-from Productos.models import Producto
-from django.db.models import Sum
-from django.db.models import Sum
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import GuiaDespacho, DetalleDespacho
-from .forms import GuiaDespachoForm, DetalleDespachoFormSet
-from django.http import JsonResponse
-
-from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.db.models import Sum
 
@@ -31,7 +20,7 @@ def ingresar_guia_despacho(request, pedido_id):
         for p in productos
     }
 
-    # Preparar info para el template
+    #Trae la información del producto en relación con el pedido específico, y lo guarda en una lista
     productos_info = []
     for p in productos:
         total = p.cantidad_producto or 0
@@ -48,6 +37,7 @@ def ingresar_guia_despacho(request, pedido_id):
             "restante": restante,
         })
 
+    #Trae los formularios
     if request.method == 'POST':
         form = GuiaDespachoForm(request.POST, cliente=cliente)
         formset = DetalleDespachoFormSet(

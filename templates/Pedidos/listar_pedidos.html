@@ -31,6 +31,7 @@
                     <th>Total Pedido</th>
                     <th class="text-center">Productos</th>
                     <th class="text-center">Facturas</th>
+                    <th class="text-center">Guías D.</th>
                     <th class="text-center">Acción</th>
                 </tr>
             </thead>
@@ -39,14 +40,14 @@
                 <tr>
                     <td>{{ pedido.cod_pedido }}</td>
                     <td>{{ pedido.cliente.razon_social_cliente }}</td>
-                    <td>{{ pedido.fecha_pedido }}</td>
+                    <td>{{ pedido.fecha_pedido|date:"d/m/Y" }}</td>
                     <td>{{ pedido.total_neto_pedido }}</td>
                     <td>{{ pedido.iva_pedido }}</td>
                     <td>{{ pedido.total_pedido }}</td>
                     
                     <td class="text-center">
                         <button type="button" class="btn btn-info btn-sm btn-ver-productos" data-id="{{ pedido.id }}">
-                            Detalle ({{ pedido.producto_set.count }})
+                            Detalle
                         </button>
                     </td>
                     
@@ -56,7 +57,13 @@
                             class="btn btn-warning btn-sm btn-ver-facturas" 
                             data-id="{{ pedido.id }}"
                         >
-                            Facturas ({{ pedido.factura_set.count }})
+                            Facturas
+                        </button>
+                    </td>
+
+                    <td>
+                        <button type="button" class="btn btn-secondary btn-sm btn-ver-despachos" data-id="{{ pedido.id }}">
+                            Despachos
                         </button>
                     </td>
                     
@@ -65,9 +72,6 @@
                         <a href="{% url 'pedidos:editar_pedido' pedido.id %}" class="btn btn-warning btn-sm mb-1">Editar Pedido</a>
                         <a href="{% url 'facturas:ingresar_factura' pedido.id %}" class="btn btn-primary btn-sm">Ingresar Factura</a>
                         <a href="{% url 'despachos:ingresar_guia' pedido.id %}" class="btn btn-info btn-sm mb-1">Ingresar Guía</a>
-                        <button type="button" class="btn btn-secondary btn-sm btn-ver-despachos" data-id="{{ pedido.id }}">
-                            Despachos ({{ pedido.guia_despacho_set.count }})
-                        </button>
                         <a href="{% url 'pedidos:exportar_pedido_excel' pedido.id %}" class="btn btn-success">
                             Exportar a Excel
                         </a>

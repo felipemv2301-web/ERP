@@ -1,0 +1,105 @@
+{% extends "Home/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Editar Cliente: {{ cliente.nombre_fantasia_cliente }}</h2>
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="POST" id="editarClienteForm">
+    {% csrf_token %}
+
+    <!-- Datos del Cliente -->
+    <div class="card mb-4 p-3 shadow-sm">
+      <h4>Datos del Cliente</h4>
+      {{ cliente_form.as_p }}
+    </div>
+
+    <!-- Direcciones -->
+    <div class="card mb-4 p-3 shadow-sm">
+      <h4>Direcciones</h4>
+      <div id="direccionesContainer">
+        {{ direccion_formset.management_form }}
+        {% for form in direccion_formset %}
+          <div class="direccion-form p-3 mb-2 rounded" style="background-color: #f9f9f9;">
+            {{ form.as_p }}
+            {% if form.instance.pk %}
+              <label>
+                {{ form.DELETE }} Eliminar
+              </label>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn btn-sm btn-success" id="addDireccion">+ Agregar Dirección</button>
+    </div>
+
+    <!-- Contactos -->
+    <div class="card mb-4 p-3 shadow-sm">
+      <h4>Contactos</h4>
+      <div id="contactosContainer">
+        {{ contacto_formset.management_form }}
+        {% for form in contacto_formset %}
+          <div class="contacto-form p-3 mb-2 rounded" style="background-color: #f9f9f9;">
+            {{ form.as_p }}
+            {% if form.instance.pk %}
+              <label>
+                {{ form.DELETE }} Eliminar
+              </label>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn btn-sm btn-success" id="addContacto">+ Agregar Contacto</button>
+    </div>
+
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Función para añadir formulario de dirección
+  const addDireccionBtn = document.getElementById("addDireccion");
+  const direccionContainer = document.getElementById("direccionesContainer");
+  const totalDireccionForms = direccionContainer.querySelector("#id_direcciones-TOTAL_FORMS");
+
+  addDireccionBtn.addEventListener("click", () => {
+    const formNum = parseInt(totalDireccionForms.value);
+    const emptyFormHtml = direccionContainer.querySelector(".direccion-form").outerHTML
+      .replace(/direcciones-0/g, `direcciones-${formNum}`)
+      .replace(/id_direcciones-0/g, `id_direcciones-${formNum}`);
+    direccionContainer.insertAdjacentHTML("beforeend", emptyFormHtml);
+    totalDireccionForms.value = formNum + 1;
+  });
+
+  // Función para añadir formulario de contacto
+  const addContactoBtn = document.getElementById("addContacto");
+  const contactoContainer = document.getElementById("contactosContainer");
+  const totalContactoForms = contactoContainer.querySelector("#id_contactos-TOTAL_FORMS");
+
+  addContactoBtn.addEventListener("click", () => {
+    const formNum = parseInt(totalContactoForms.value);
+    const emptyFormHtml = contactoContainer.querySelector(".contacto-form").outerHTML
+      .replace(/contactos-0/g, `contactos-${formNum}`)
+      .replace(/id_contactos-0/g, `id_contactos-${formNum}`);
+    contactoContainer.insertAdjacentHTML("beforeend", emptyFormHtml);
+    totalContactoForms.value = formNum + 1;
+  });
+
+});
+</script>
+{% endblock %}

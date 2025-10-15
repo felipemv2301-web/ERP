@@ -1,25 +1,128 @@
+{% extends "Home/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Ingresar Cliente</title>
-    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="container py-4">
-    <h2 class="mb-4 text-center">Registrar Nuevo Cliente</h2>
+{% block content %}
 
-    <form method="post" novalidate>
-        {% csrf_token %}
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">Datos del Cliente</div>
-            <div class="card-body">
-                {{ form.as_p }}
-            </div>
+
+{% if messages %}
+<div>
+    {% for message in messages %}
+        <div 
+            class="alert 
+                    {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %} alert-dismissible fade show" 
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
-        <button type="submit" class="btn btn-success w-100">Guardar Cliente</button>
-    </form>
+    {% endfor %}
 </div>
-</body>
-</html>
+{% endif %}
+
+<div class="container mt-4">
+  <h2>Ingresar Cliente</h2>
+  <form method="POST">
+    {% csrf_token %}
+
+    <!-- ===========================
+         SECCIÓN CLIENTE
+    ============================ -->
+    <div class="card mb-4 p-3 shadow-sm">
+      <h4>Datos del Cliente</h4>
+      {{ cliente_form.as_p }}
+    </div>
+
+    <!-- ===========================
+         SECCIÓN DIRECCIONES
+    ============================ -->
+    <div class="card mb-4 p-3 shadow-sm">
+      <h4>Direcciones</h4>
+      {{ direccion_formset.management_form }}
+      <div id="direccion-forms">
+        {% for form in direccion_formset %}
+          <div class="direccion-form border p-3 mb-2 bg-light rounded">
+            {{ form.as_p }}
+            <button type="button" class="btn btn-sm btn-danger remove-form mt-2">Eliminar</button>
+          </div>
+        {% endfor %}
+      </div>
+      <button type="button" id="add-direccion" class="btn btn-sm btn-secondary mt-2">+ Agregar dirección</button>
+    </div>
+
+    <!-- ===========================
+         SECCIÓN CONTACTOS
+    ============================ -->
+    <div class="card mb-4 p-3 shadow-sm">
+      <h4>Contactos</h4>
+      {{ contacto_formset.management_form }}
+      <div id="contacto-forms">
+        {% for form in contacto_formset %}
+          <div class="contacto-form border p-3 mb-2 bg-light rounded">
+            {{ form.as_p }}
+            <button type="button" class="btn btn-sm btn-danger remove-form mt-2">Eliminar</button>
+          </div>
+        {% endfor %}
+      </div>
+      <button type="button" id="add-contacto" class="btn btn-sm btn-secondary mt-2">+ Agregar contacto</button>
+    </div>
+
+    <!-- ===========================
+         BOTÓN DE GUARDAR
+    ============================ -->
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary">Guardar Cliente Completo</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===========================
+     SCRIPTS JS PARA FORMSETS
+============================ -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // --- Direcciones ---
+  const direccionContainer = document.getElementById("direccion-forms");
+  const addDireccionBtn = document.getElementById("add-direccion");
+  const totalDirecciones = document.getElementById("id_direcciones-TOTAL_FORMS");
+
+  addDireccionBtn.addEventListener("click", function() {
+    const currentCount = parseInt(totalDirecciones.value);
+    const newForm = direccionContainer.firstElementChild.cloneNode(true);
+    newForm.querySelectorAll("input").forEach(input => {
+      const name = input.name.replace(`direcciones-${currentCount - 1}-`, `direcciones-${currentCount}-`);
+      const id = input.id.replace(`direcciones-${currentCount - 1}-`, `direcciones-${currentCount}-`);
+      input.name = name;
+      input.id = id;
+      input.value = "";
+    });
+    direccionContainer.appendChild(newForm);
+    totalDirecciones.value = currentCount + 1;
+  });
+
+  // --- Contactos ---
+  const contactoContainer = document.getElementById("contacto-forms");
+  const addContactoBtn = document.getElementById("add-contacto");
+  const totalContactos = document.getElementById("id_contactos-TOTAL_FORMS");
+
+  addContactoBtn.addEventListener("click", function() {
+    const currentCount = parseInt(totalContactos.value);
+    const newForm = contactoContainer.firstElementChild.cloneNode(true);
+    newForm.querySelectorAll("input").forEach(input => {
+      const name = input.name.replace(`contactos-${currentCount - 1}-`, `contactos-${currentCount}-`);
+      const id = input.id.replace(`contactos-${currentCount - 1}-`, `contactos-${currentCount}-`);
+      input.name = name;
+      input.id = id;
+      input.value = "";
+    });
+    contactoContainer.appendChild(newForm);
+    totalContactos.value = currentCount + 1;
+  });
+
+  // --- Botón Eliminar (genérico para ambos) ---
+  document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("remove-form")) {
+      e.target.closest(".direccion-form, .contacto-form").remove();
+    }
+  });
+});
+</script>
+
+{% endblock %}
