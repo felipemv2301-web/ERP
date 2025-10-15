@@ -2,13 +2,13 @@
 {% load widget_tweaks %}
 {% load dict_filters %}
 
-{% block titulo %}Guía de Despacho - Pedido {{ pedido.cod_pedido }}{% endblock %}
+{% block titulo %}Editar Guía de Despacho - Pedido {{ pedido.cod_pedido }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow-lg">
-        <div class="card-header bg-warning text-white justify-content-between align-items-center">
-            <h2 class="mb-0"><i class="fas fa-truck me-2"></i> Guía de Despacho - Pedido {{ pedido.cod_pedido }}</h2>
+        <div class="card-header bg-info text-white justify-content-between align-items-center">
+            <h2 class="mb-0"><i class="fas fa-edit me-2"></i> Editar Guía de Despacho - Pedido {{ pedido.cod_pedido }}</h2>
         </div>
 
         <div class="card-body">
@@ -82,16 +82,16 @@
                                 {% for f in formset %}
                                 <tr class="form-row">
                                     <td>
-                                    <select name="{{ f.producto.html_name }}" class="form-select producto-select">
-                                        <option value="">Seleccione producto</option>
-                                        {% for p in productos_info %}
-                                            <option value="{{ p.id }}"
-                                                data-restante="{{ p.restante }}"
-                                                {% if f.producto.value == p.id %}selected{% endif %}>
-                                                {{ p.nombre }} - {{ p.tipo }} - {{ p.tamano }} - Restante: {{ p.restante }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
+                                        <select name="{{ f.producto.html_name }}" class="form-select producto-select">
+                                            <option value="">Seleccione producto</option>
+                                            {% for p in productos_info %}
+                                                <option value="{{ p.id }}"
+                                                    data-restante="{{ p.restante }}"
+                                                    {% if f.producto.value == p.id %}selected{% endif %}>
+                                                    {{ p.nombre }} - {{ p.tipo }} - {{ p.tamano }} - Restante: {{ p.restante }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
                                         {% if f.producto.errors %}
                                             <div class="text-danger small">{{ f.producto.errors|striptags }}</div>
                                         {% endif %}
@@ -112,7 +112,8 @@
                                         <button type="button" class="btn btn-danger btn-sm eliminar-fila">
                                             <i class="fas fa-trash"></i>
                                         </button>
-                                        {{ f.DELETE|attr:"hidden:true" }}
+                                        <!-- Input DELETE oculto pero funcional -->
+                                        {{ f.DELETE|add_class:"delete-checkbox" }}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -125,7 +126,7 @@
                             <i class="fas fa-plus me-1"></i> Agregar Producto
                         </button>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i> Guardar Guía
+                            <i class="fas fa-save me-1"></i> Actualizar Guía
                         </button>
                     </div>
                 </div>
@@ -144,8 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const agregarFilaBtn = document.getElementById('agregar-fila');
 
     function initPopovers() {
-        const selects = document.querySelectorAll('.producto-select');
-        selects.forEach(select => {
+        document.querySelectorAll('.producto-select').forEach(select => {
             const popover = new bootstrap.Popover(select, {
                 trigger: 'focus',
                 placement: 'bottom',
@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initPopovers();
 
+    // Agregar nueva fila
     agregarFilaBtn.addEventListener('click', () => {
         const formCount = parseInt(totalForms.value);
         const templateRow = detalleBody.querySelector('.form-row');
@@ -184,26 +185,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.name = el.name.replace(/-\d+-/, `-${formCount}-`);
                 el.id = el.id.replace(/-\d+-/, `-${formCount}-`);
             }
-            if(el.type === 'checkbox') el.checked = false;
+            if(el.type === 'checkbox') el.checked = false; // Desmarcar DELETE
             else el.value = '';
         });
 
+        newRow.style.display = ''; // asegurar que no esté oculto
         detalleBody.appendChild(newRow);
         totalForms.value = formCount + 1;
 
         initPopovers();
     });
 
+    // Eliminar fila
     detalleBody.addEventListener('click', (e) => {
         if (e.target.closest('.eliminar-fila')) {
             const row = e.target.closest('tr');
-            const deleteInput = row.querySelector('input[name$="-DELETE"]');
+            const deleteInput = row.querySelector('input.delete-checkbox');
             if(deleteInput){
-                deleteInput.checked = true;
-                row.style.display = 'none';
-            } else {
-                row.remove();
-                totalForms.value = parseInt(totalForms.value) - 1;
+                deleteInput.checked = true;   // marcar para eliminar
+                row.style.display = 'none';  // ocultar fila
             }
         }
     });

@@ -22,6 +22,11 @@ class Producto(models.Model):
 
     def subtotal(self):
         return self.precio_unitario_producto * self.cantidad_producto
+    
+    @property
+    def total_pedido(self):
+        """Retorna el total basado en la cantidad del pedido, no en lo despachado."""
+        return (self.producto.cantidad_producto or 0) * (self.producto.precio_unitario_producto or 0)
 
     def __str__(self):
         return self.nombre_producto

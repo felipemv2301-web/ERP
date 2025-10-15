@@ -38,5 +38,10 @@ class DetalleDespacho(models.Model):
     cantidad_despachada = models.PositiveIntegerField()
     nombre_repartidor = models.CharField(max_length=100)
 
+    @property
+    def total_pedido(self):
+        """Retorna el total basado en la cantidad del pedido, no en lo despachado."""
+        return (self.producto.cantidad_producto or 0) * (self.producto.precio_unitario_producto or 0)
+
     def __str__(self):
         return f"{self.producto.nombre_producto} - Cantidad: {self.cantidad_despachada}"

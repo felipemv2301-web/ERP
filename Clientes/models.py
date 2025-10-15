@@ -6,6 +6,7 @@ class Cliente(models.Model):
     razon_social_cliente = models.CharField(max_length=100)
     nombre_fantasia_cliente = models.CharField(max_length=100)
     rut_cliente = models.CharField(max_length=12, unique=True)
+    activo = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         # seguridad: si no hay código aún, lo generamos

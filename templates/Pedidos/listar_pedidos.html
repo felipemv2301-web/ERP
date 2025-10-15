@@ -5,22 +5,56 @@
 
 {% block extra_css %}
 <style>
-    #tablaPedidos {
-        font-size: 14px;
-    }
-    #tablaPedidos td, #tablaPedidos th {
-        padding: 10px; 
-        vertical-align: middle; 
-    }
+/* Tabla */
+#tablaPedidos {
+    font-size: 14px;
+}
+#tablaPedidos td, #tablaPedidos th {
+    padding: 10px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Encabezado */
+#tablaPedidos thead {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Botones agrupados: centrados y alineados en fila */
+.btn-group-table {
+    display: flex;
+    justify-content: center; /* centra horizontalmente */
+    align-items: center;     /* centra verticalmente */
+    gap: 5px;                /* espacio entre botones */
+    flex-wrap: nowrap;        /* evitar que se rompan en otra línea */
+}
+
+/* Botones tamaño pequeño */
+.btn-group-table .btn {
+    font-size: 13px;
+    padding: 4px 8px;
+    white-space: nowrap; /* evitar quiebre de texto dentro del botón */
+}
+
+/* Botón Excel personalizado */
+.btn-excel {
+    background-color: #198754;
+    color: white;
+}
+.btn-excel:hover {
+    background-color: #157347;
+    color: white;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container my-5">
-    <h1>Lista de Pedidos</h1>
-    
+    <h1 class="mb-4">Lista de Pedidos</h1>
+
     <div class="table-responsive">
-        <table id="tablaPedidos" class="table table-striped table-hover" style="width:100%">
+        <table id="tablaPedidos" class="table table-striped table-hover align-middle text-center">
             <thead>
                 <tr>
                     <th>Código Pedido</th>
@@ -29,9 +63,10 @@
                     <th>Total Neto</th>
                     <th>IVA</th>
                     <th>Total Pedido</th>
-                    <th class="text-center">Productos</th>
-                    <th class="text-center">Facturas</th>
-                    <th class="text-center">Acción</th>
+                    <th>Productos</th>
+                    <th>Facturas</th>
+                    <th>Guías D.</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,34 +74,57 @@
                 <tr>
                     <td>{{ pedido.cod_pedido }}</td>
                     <td>{{ pedido.cliente.razon_social_cliente }}</td>
-                    <td>{{ pedido.fecha_pedido }}</td>
+                    <td>{{ pedido.fecha_pedido|date:"d/m/Y" }}</td>
                     <td>{{ pedido.total_neto_pedido }}</td>
                     <td>{{ pedido.iva_pedido }}</td>
                     <td>{{ pedido.total_pedido }}</td>
-                    
-                    <td class="text-center">
-                        <button type="button" class="btn btn-info btn-sm btn-ver-productos" data-id="{{ pedido.id }}">
-                            Detalle ({{ pedido.producto_set.count }})
-                        </button>
-                    </td>
-                    
-                    <td class="text-center">
-                        <button type="button" class="btn btn-warning btn-sm btn-ver-facturas" data-id="{{ pedido.id }}">
-                            Facturas ({{ pedido.factura_set.count }})
-                        </button>
-                    </td>
-                    
+
+                    <!-- Productos -->
                     <td>
-                        <a href="{% url 'pedidos:pdf_un_pedido' pedido.id %}" class="btn btn-success btn-sm mb-1" target="_blank">Generar PDF</a>
-                        <a href="{% url 'pedidos:editar_pedido' pedido.id %}" class="btn btn-warning btn-sm mb-1">Editar Pedido</a>
-                        <a href="{% url 'facturas:ingresar_factura' pedido.id %}" class="btn btn-primary btn-sm">Ingresar Factura</a>
-                        <a href="{% url 'despachos:ingresar_guia' pedido.id %}" class="btn btn-info btn-sm mb-1">Ingresar Guía</a>
-                        <button type="button" class="btn btn-secondary btn-sm btn-ver-despachos" data-id="{{ pedido.id }}">
-                            Despachos ({{ pedido.guia_despacho_set.count }})
-                        </button>
-                        <a href="{% url 'pedidos:exportar_pedido_excel' pedido.id %}" class="btn btn-success">
-                            Exportar a Excel
-                        </a>
+                        <div class="btn-group-table">
+                            <button type="button" class="btn btn-info btn-sm btn-ver-productos" data-id="{{ pedido.id }}">
+                                <i class="fa fa-eye me-1"></i> Detalle
+                            </button>
+                        </div>
+                    </td>
+
+                    <!-- Facturas -->
+                    <td>
+                        <div class="btn-group-table">
+                            <button type="button" class="btn btn-success btn-sm btn-ver-facturas" data-id="{{ pedido.id }}">
+                                <i class="fa fa-file-invoice me-1"></i> Ver
+                            </button>
+                            <a href="{% url 'facturas:ingresar_factura' pedido.id %}" class="btn btn-primary btn-sm">
+                                <i class="fa fa-plus me-1"></i> Ingresar
+                            </a>
+                        </div>
+                    </td>
+
+                    <!-- Despachos -->
+                    <td>
+                        <div class="btn-group-table">
+                            <button type="button" class="btn btn-warning btn-sm btn-ver-despachos" data-id="{{ pedido.id }}">
+                                <i class="fa fa-truck me-1"></i> Ver
+                            </button>
+                            <a href="{% url 'despachos:ingresar_guia' pedido.id %}" class="btn btn-primary btn-sm text-white">
+                                <i class="fa fa-plus me-1"></i> Ingresar
+                            </a>
+                        </div>
+                    </td>
+
+                    <!-- Acción general -->
+                    <td>
+                        <div class="btn-group-table">
+                            <a href="{% url 'pedidos:pdf_un_pedido' pedido.id %}" class="btn btn-danger btn-sm" target="_blank">
+                                <i class="fas fa-file-pdf me-1"></i> PDF
+                            </a>
+                            <a href="{% url 'pedidos:editar_pedido' pedido.id %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit me-1"></i> Editar
+                            </a>
+                            <a href="{% url 'pedidos:exportar_pedido_excel' pedido.id %}" class="btn btn-excel btn-sm">
+                                <i class="fas fa-file-excel me-1"></i> Excel
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -75,14 +133,18 @@
     </div>
 
     <a href="{% url 'pedidos:exportar_excel' %}" class="btn btn-success mt-3">
-        Descargar Excel
+        <i class="fa fa-download me-1"></i> Descargar Excel
     </a>
 </div>
 
-<!-- Modal Productos -->
+<!-- ================= MODALES ================= -->
 <div class="modal fade" id="productosModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Productos del Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
       <div class="modal-body" id="productosModalBody">
         <div class="text-center py-5">
           <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
@@ -92,10 +154,13 @@
   </div>
 </div>
 
-<!-- Modal Facturas -->
 <div class="modal fade" id="facturasModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Facturas del Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
       <div class="modal-body" id="facturasModalBody">
         <div class="text-center py-5">
           <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
@@ -105,10 +170,13 @@
   </div>
 </div>
 
-<!-- Modal Despachos -->
 <div class="modal fade" id="despachosModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Despachos del Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
       <div class="modal-body" id="despachosModalBody">
         <div class="text-center py-5">
           <i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...
@@ -126,46 +194,43 @@ $(document).ready(function() {
     $('#tablaPedidos').DataTable({
         language: { url: '{% static "vendor/datatables/i18n/es-ES.json" %}' },
         columnDefs: [
-            { targets: 6, orderable: false, searchable: false },
-            { targets: 7, orderable: false, searchable: false },
-            { targets: 8, orderable: false, searchable: false }
-        ]
+            { targets: [6,7,8,9], orderable: false, searchable: false, width: "150px" }
+        ],
+        autoWidth: false,
+        responsive: true
     });
 
-    // AJAX Productos
+    // === AJAX Productos ===
     $('.btn-ver-productos').on('click', function() {
         let pedidoId = $(this).data('id');
         $('#productosModal').modal('show');
         $('#productosModalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...</div>');
-
         $.ajax({
-            url: '/pedidos/pedido/' + pedidoId + '/modal_productos/',
+            url: `/pedidos/pedido/${pedidoId}/modal_productos/`,
             success: function(data) { $('#productosModalBody').html(data); },
             error: function() { $('#productosModalBody').html('<p class="text-danger text-center">Error cargando productos.</p>'); }
         });
     });
 
-    // AJAX Facturas
+    // === AJAX Facturas ===
     $('.btn-ver-facturas').on('click', function() {
         let pedidoId = $(this).data('id');
         $('#facturasModal').modal('show');
         $('#facturasModalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...</div>');
-
         $.ajax({
-            url: '/pedidos/pedido/' + pedidoId + '/modal_facturas/',
+            url: `/pedidos/pedido/${pedidoId}/modal_facturas/`,
             success: function(data) { $('#facturasModalBody').html(data); },
             error: function() { $('#facturasModalBody').html('<p class="text-danger text-center">Error cargando facturas.</p>'); }
         });
     });
 
-    // AJAX Despachos
+    // === AJAX Despachos ===
     $('.btn-ver-despachos').on('click', function() {
         let pedidoId = $(this).data('id');
         $('#despachosModal').modal('show');
         $('#despachosModalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i> Cargando...</div>');
-
         $.ajax({
-            url: '/pedidos/pedido/' + pedidoId + '/modal_despachos/',
+            url: `/pedidos/pedido/${pedidoId}/modal_despachos/`,
             success: function(data) { $('#despachosModalBody').html(data); },
             error: function() { $('#despachosModalBody').html('<p class="text-danger text-center">Error cargando despachos.</p>'); }
         });
